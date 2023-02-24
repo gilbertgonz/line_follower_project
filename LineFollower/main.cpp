@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     if (argc >= 2)
         filename = argv[1];
     else
-        filename = "../Images/line.mp4";
+        filename = "../Images/shapes.png"; // ../Images/line.mp4
 
     if (filename.find(".mp4") != std::string::npos || filename.find(".avi") != std::string::npos) { 
         // Load video from file
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
             cap.release();
             cv::destroyAllWindows();
     }
-    else {
+    else if (filename.find("jpeg") != std::string::npos || filename.find("jpg") != std::string::npos || filename.find("png") != std::string::npos){
         // Load image from file
         const cv::Mat image = cv::imread(filename);
         if (image.empty()) {
@@ -203,6 +203,97 @@ int main(int argc, char** argv) {
             cv::imshow("EML4840", canvas);
         }
     }
-
+    else {
+        cv::VideoCapture cap(0);
+        // Check if any error happened
+        if(!cap.isOpened()) {
+            std::cout << "Ops, capture cannot be created!" << std::endl;
+            return -1;
+        }
+        std::cout << "Press 'Esc' to quit..." << std::endl;
+        cv::Mat image;
+        // Create windows with trackbar
+        cv::namedWindow("EML4840");
+        // Trackers
+        int track_row = 70;     // Percentage
+        int track_scale = 40;   // Percentage
+        int track_resize = 100;
+        cv::createTrackbar("Row", "EML4840", &track_row, 100);
+        cv::createTrackbar("Scale", "EML4840", &track_scale, 100);
+        cv::createTrackbar("resize", "EML4840", &track_resize, 100);
+        // Menu
+        bool show_red = true;
+        bool show_blue = true;
+        bool show_green = true;
+        bool show_gray = true;
+        std::cout << "Press:" << std::endl
+                << "s            : to save image" << std::endl
+                << "r, g, b, or k: to show colors" << std::endl
+                << "q or ESC     : to quit" << std::endl;
+        // Create vectors to store the graphs
+        std::vector<uchar> r, g, b, k;
+        // Run until 'q' is pressed...
+        bool running = true;
+        while( running ) {
+            // Capture frame from the camera
+            cap.read(image);
+            // Check the if image type is compatible with CV_8UC3
+            std::string type = cv::typeToString( image.type() );
+            if (type != "CV_8UC3") {
+                std::cout << "Ops, format '" << type << "' not supported!" << std::endl;
+                return 1;
+            }
+            // Clear colors
+            r.clear();
+            g.clear();
+            b.clear();
+            k.clear();
+            // Update scale
+            float scale = 0.01*track_scale;
+            // Pixel scanning
+            int y = 0.01*track_row*(image.rows-1);
+            for (int x = 0; x < image.cols; ++x ) {
+                Pixel pixel = image.at<Pixel>( cv::Point(x, y) );
+                r.push_back( pixel[2] );
+                g.push_back( pixel[1] );
+                b.push_back( pixel[0] );
+                k.push_back( gray(pixel) );
+            }
+            // clone image and keep the original for processing!
+            cv::Mat canvas = image.clone();
+            if (show_red)   plotRow(canvas, r, y, scale, cv::Scalar(0,0,255));
+            if (show_green) plotRow(canvas, g, y, scale, cv::Scalar(0,255,0));
+            if (show_blue) plotRow(canvas, b, y, scale, cv::Scalar(255,0,0));
+            if (show_gray) plotRow(canvas, k, y, scale, cv::Scalar(200,200,200));
+            // Show image and wait for key
+            cv::imshow("EML4840", canvas);
+            char k = cv::waitKey(1);
+            switch(k) {
+            case 'q':
+            case 27: // Esc key
+                running = false;
+                break;
+            case 's':
+                cv::imwrite("image.png", image);
+                std::cout << "Image saved!" << std::endl;
+                break;
+            case 'r':
+                show_red = !show_red;
+                break;
+            case 'g':
+                show_green = !show_green;
+                break;
+            case 'b':
+                show_blue = !show_blue;
+                break;
+            case 'k':
+                show_gray = !show_gray;
+                break;
+            }
+        }
+        // Release the camera and destroy windows
+        cap.release();
+        cv::destroyAllWindows();
+    }
     return 0;
 }
