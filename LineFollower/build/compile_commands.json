@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/gilberto/EML4840/LineFollower/build",
+  "command": "/usr/bin/g++   -isystem /usr/local/include/opencv4  -g   -o CMakeFiles/lineFollower.dir/main.cpp.o -c /home/gilberto/EML4840/LineFollower/main.cpp",
+  "file": "/home/gilberto/EML4840/LineFollower/main.cpp"
+}
+]

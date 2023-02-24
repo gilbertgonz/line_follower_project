@@ -1,0 +1,3 @@
+/home/gilberto/EML4840/LineFollower/build/CMakeFiles/rebuild_cache.dir
+/home/gilberto/EML4840/LineFollower/build/CMakeFiles/edit_cache.dir
+/home/gilberto/EML4840/LineFollower/build/CMakeFiles/lineFollower.dir
